@@ -1,0 +1,41 @@
+services:
+  migrator:
+    container_name: migrator
+    build:
+      context: .
+      dockerfile: cmd/migrator/Dockerfile
+    volumes:
+      - ./migrations:/app/migrations
+      - ./config:/app/config
+    networks:
+    - my-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+  
+  postgres:
+    image: postgres:18.0-alpine3.22
+    container_name: prReviewsPostsgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=veryStrongPassword
+      - POSTGRES_DB=prReviewsDB
+    ports:
+      - "5432:5432"
+    volumes:
+      - prReviewDB:/var/lib/postgresql
+    networks:
+      - my-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "prReviewsDB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  prReviewDB:
+networks:
+  my-network:
+    driver: bridge
+  

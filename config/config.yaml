@@ -1,0 +1,16 @@
+appConfig: 
+  Env: "local"
+
+webConfig:
+  ListenAddress: ":8888"
+  ReadTimeout: 15
+  WriteTimeout: 15
+
+
+postgresConfig:
+  DbHost: "postgres"
+  DbPort: 5432
+  DbUser: "postgres"
+  DbPassword: "veryStrongPassword"
+  DbName: "prReviewsDB"
+  DbSslMode: "disable"
