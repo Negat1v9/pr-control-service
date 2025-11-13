@@ -3,8 +3,6 @@ package teamrepository
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strings"
 
 	"github.com/Negat1v9/pr-review-service/internal/models"
 	"github.com/jmoiron/sqlx"
@@ -83,34 +81,4 @@ func (r *teamRepositiry) GetUsersIDFromUserTeam(ctx context.Context, exec sqlx.E
 	}
 
 	return userTeamMembersID, nil
-}
-
-func (r *teamRepositiry) CreateTeamMember(ctx context.Context, exec sqlx.ExtContext, userID, teamName string) error {
-	_, err := exec.ExecContext(ctx, createTeamMemberQuery, userID, teamName)
-	return err
-}
-
-func (r *teamRepositiry) CreateManyTeamMembers(ctx context.Context, exec sqlx.ExtContext, teamMembers *models.Team) error {
-	if len(teamMembers.Members) == 0 {
-		return nil
-	}
-
-	var placeholders []string
-	var args []any
-
-	for i, member := range teamMembers.Members {
-		offset := i * 2
-		placeholders = append(placeholders, fmt.Sprintf("($%d, $%d)", offset+1, offset+2))
-		args = append(args, member.UserID, teamMembers.TeamName)
-	}
-
-	query := fmt.Sprintf(createManyTeamMembersQuery, strings.Join(placeholders, ","))
-
-	rows, err := exec.QueryxContext(ctx, query, args...)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	return rows.Err()
 }

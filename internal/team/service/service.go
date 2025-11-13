@@ -39,12 +39,7 @@ func (s *TeamService) AddTeam(ctx context.Context, newTeam *models.Team) (*model
 			return err
 		}
 
-		if err := s.store.UserRepo.CreateManyUsers(ctx, exec, newTeam.Members); err != nil {
-			return err
-		}
-
-		//
-		if err := s.store.TeamRepo.CreateManyTeamMembers(ctx, exec, newTeam); err != nil {
+		if err := s.store.UserRepo.CreateManyUsers(ctx, exec, newTeam.TeamName, newTeam.Members); err != nil {
 			return err
 		}
 

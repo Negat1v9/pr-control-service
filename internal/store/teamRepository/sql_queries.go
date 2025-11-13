@@ -8,28 +8,16 @@ const (
 
 	getTeamWithUsersByNameQuery = `
 		SELECT t.team_name, u.user_id, u.username, u.is_active
-			FROM team_member tm
-		INNER JOIN teams t 
-			ON tm.team_name = t.team_name
+			FROM teams t
 		INNER JOIN users u 
-			ON tm.user_id = u.user_id
-		WHERE tm.team_name = $1
+			ON t.team_name = u.team_name
+		WHERE t.team_name = $1
 	`
 
 	getActiveUserIDFromUserTeamQuery = `
-		SELECT (user_id) FROM team_member 
+		SELECT (user_id) FROM users 
 			WHERE team_name IN (
-				SELECT team_name from team_member WHERE user_id = $1
-			) AND user_id != $1
-	`
-
-	createTeamMemberQuery = `
-		INSERT INTO team_member (user_id, team_name) 
-			VALUES ($1, $2)
-	`
-
-	createManyTeamMembersQuery = `
-		INSERT INTO team_member (user_id, team_name) 
-			VALUES %s
+				SELECT team_name from users WHERE user_id = $1
+			) AND user_id != $1 AND is_active = true
 	`
 )

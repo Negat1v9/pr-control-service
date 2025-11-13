@@ -10,8 +10,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, exec sqlx.ExtContext, user *models.User) error
-	CreateManyUsers(ctx context.Context, exec sqlx.ExtContext, users []models.User) error
+	CreateUser(ctx context.Context, exec sqlx.ExtContext, teamName string, user *models.User) error
+	CreateManyUsers(ctx context.Context, exec sqlx.ExtContext, teamName string, users []models.User) error
 	GetUserReviews(ctx context.Context, exec sqlx.ExtContext, userID string) (*models.UserReviews, error)
 }
 
@@ -19,8 +19,6 @@ type TeamRepository interface {
 	CreateTeam(ctx context.Context, exec sqlx.ExtContext, teamName string) error
 	GetTeamWithMembers(ctx context.Context, exec sqlx.ExtContext, teamName string) (*models.Team, error)
 	GetUsersIDFromUserTeam(ctx context.Context, exec sqlx.ExtContext, userID string) ([]string, error)
-	CreateTeamMember(ctx context.Context, exec sqlx.ExtContext, userID, teamName string) error
-	CreateManyTeamMembers(ctx context.Context, exec sqlx.ExtContext, teamMembers *models.Team) error
 }
 
 type PullRequestRepository interface {

@@ -17,12 +17,12 @@ func NewUserRepository() *userRepository {
 	return &userRepository{}
 }
 
-func (r *userRepository) CreateUser(ctx context.Context, exec sqlx.ExtContext, user *models.User) error {
-	_, err := exec.ExecContext(ctx, createUserQuery, user.UserID, user.Username, user.TeamName, user.IsActive)
+func (r *userRepository) CreateUser(ctx context.Context, exec sqlx.ExtContext, teamName string, user *models.User) error {
+	_, err := exec.ExecContext(ctx, createUserQuery, user.UserID, user.Username, user.IsActive, teamName)
 	return err
 }
 
-func (r *userRepository) CreateManyUsers(ctx context.Context, exec sqlx.ExtContext, users []models.User) error {
+func (r *userRepository) CreateManyUsers(ctx context.Context, exec sqlx.ExtContext, teamName string, users []models.User) error {
 	if len(users) == 0 {
 		return fmt.Errorf("userRepository.CreateManyUsers: no users")
 	}
@@ -31,9 +31,9 @@ func (r *userRepository) CreateManyUsers(ctx context.Context, exec sqlx.ExtConte
 	var args []any
 
 	for i, user := range users {
-		offset := i * 3
-		placeholders = append(placeholders, fmt.Sprintf("($%d, $%d, $%d)", offset+1, offset+2, offset+3))
-		args = append(args, user.UserID, user.Username, user.IsActive)
+		offset := i * 4
+		placeholders = append(placeholders, fmt.Sprintf("($%d, $%d, $%d, $%d)", offset+1, offset+2, offset+3, offset+4))
+		args = append(args, user.UserID, user.Username, user.IsActive, teamName)
 	}
 
 	query := fmt.Sprintf(createManyUsersQuery, strings.Join(placeholders, ","))

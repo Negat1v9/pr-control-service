@@ -6,16 +6,13 @@ CREATE TABLE IF NOT EXISTS teams (
 CREATE TABLE IF NOT EXISTS users (
     user_id TEXT PRIMARY KEY,
     username TEXT NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN DEFAULT TRUE,
+    team_name TEXT REFERENCES teams(team_name),
+    UNIQUE(user_id, team_name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_user_id ON users(user_id);
 
-CREATE TABLE IF NOT EXISTS team_member (
-    user_id TEXT NOT NULL REFERENCES users(user_id),
-    team_name TEXT NOT NULL REFERENCES teams(team_name),
-    UNIQUE(user_id, team_name)
-);
 
 CREATE TABLE IF NOT EXISTS pull_requests (
     pull_request_id TEXT PRIMARY KEY,
