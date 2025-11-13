@@ -47,6 +47,7 @@ func main() {
 
 	m.Close()
 	log.Printf("[info] migrations applied successfully")
+	os.Exit(0)
 
 }
 

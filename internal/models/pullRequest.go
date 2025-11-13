@@ -18,3 +18,8 @@ type PullRequest struct {
 	CreatedAt         time.Time         `json:"createdAt" db:"createdAt"`
 	MergerAt          *time.Time        `json:"mergedAt,omitempty" db:"mergedAt,omitempty"`
 }
+
+type UserReviews struct {
+	UserID       string        `json:"user_id" db:"user_id"`
+	PullRequests []PullRequest `json:"pull_requests" db:"pull_requests"`
+}

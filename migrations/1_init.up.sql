@@ -2,15 +2,20 @@ CREATE TABLE IF NOT EXISTS teams (
     team_name TEXT PRIMARY KEY
 );
 
+
 CREATE TABLE IF NOT EXISTS users (
-    user_id TEXT,
+    user_id TEXT PRIMARY KEY,
     username TEXT NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    team_name TEXT REFERENCES teams(team_name),
-    UNIQUE (username, team_name)
+    is_active BOOLEAN DEFAULT TRUE
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_user_id ON users(user_id);
+
+CREATE TABLE IF NOT EXISTS team_member (
+    user_id TEXT NOT NULL REFERENCES users(user_id),
+    team_name TEXT NOT NULL REFERENCES teams(team_name),
+    UNIQUE(user_id, team_name)
+);
 
 CREATE TABLE IF NOT EXISTS pull_requests (
     pull_request_id TEXT PRIMARY KEY,
@@ -26,6 +31,8 @@ CREATE INDEX IF NOT EXISTS idx_pull_requests_author_id ON pull_requests(author_i
 
 
 CREATE TABLE IF NOT EXISTS assigned_reviewers (
-    reviewer_user_id TEXT REFERENCES users(user_id),
-    pull_request_id TEXT REFERENCES pull_requests(pull_request_id)
+    id SERIAL PRIMARY KEY,
+    reviewer_user_id TEXT NOT NULL REFERENCES users(user_id),
+    pull_request_id TEXT NOT NULL REFERENCES pull_requests(pull_request_id),
+    UNIQUE(reviewer_user_id, pull_request_id)
 );

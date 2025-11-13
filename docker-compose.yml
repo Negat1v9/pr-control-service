@@ -1,4 +1,22 @@
 services:
+
+  server:
+    container_name: prReviewsServer
+    build:
+      context: .
+      dockerfile: cmd/server/Dockerfile
+    ports:
+      - "8080:8888"
+    networks:
+      - my-network
+    volumes:
+      - ./config:/app/config
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+      
   migrator:
     container_name: migrator
     build:
@@ -16,7 +34,7 @@ services:
   
   postgres:
     image: postgres:18.0-alpine3.22
-    container_name: prReviewsPostsgres
+    container_name: prReviewsPostgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=veryStrongPassword

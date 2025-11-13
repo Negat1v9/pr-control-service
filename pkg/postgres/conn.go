@@ -14,5 +14,9 @@ func NewPostgresConn(host string, port int, user, password, dbname string) (*sql
 	if err != nil {
 		return nil, err
 	}
+	err = dbx.Ping()
+	if err != nil {
+		return nil, err
+	}
 	return dbx, nil
 }
