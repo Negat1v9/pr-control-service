@@ -73,3 +73,9 @@ func (r *userRepository) GetUserReviews(ctx context.Context, exec sqlx.ExtContex
 
 	return userReviews, nil
 }
+
+func (r *userRepository) UpdateUserStatus(ctx context.Context, exec sqlx.ExtContext, userID string, isActive bool) (*models.User, error) {
+	var updatedUser models.User
+	err := exec.QueryRowxContext(ctx, updateUserStatusQuery, isActive, userID).StructScan(&updatedUser)
+	return &updatedUser, err
+}

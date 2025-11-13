@@ -13,6 +13,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, exec sqlx.ExtContext, teamName string, user *models.User) error
 	CreateManyUsers(ctx context.Context, exec sqlx.ExtContext, teamName string, users []models.User) error
 	GetUserReviews(ctx context.Context, exec sqlx.ExtContext, userID string) (*models.UserReviews, error)
+	UpdateUserStatus(ctx context.Context, exec sqlx.ExtContext, userID string, isActive bool) (*models.User, error)
 }
 
 type TeamRepository interface {

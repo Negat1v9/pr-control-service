@@ -5,6 +5,7 @@ import (
 	"github.com/Negat1v9/pr-review-service/internal/server"
 	"github.com/Negat1v9/pr-review-service/internal/store"
 	teamservice "github.com/Negat1v9/pr-review-service/internal/team/service"
+	userservice "github.com/Negat1v9/pr-review-service/internal/users/service"
 	"github.com/Negat1v9/pr-review-service/pkg/logger"
 	"github.com/Negat1v9/pr-review-service/pkg/postgres"
 )
@@ -31,10 +32,10 @@ func (a *App) Run() error {
 	storage := store.NewStore(db)
 
 	teamService := teamservice.NewTeamService(storage)
+	userService := userservice.NewUserService(storage)
 
 	server := server.New(a.cfg, a.log)
 
-	server.MapHandlers(teamService)
-
+	server.MapHandlers(teamService, userService)
 	return server.Run()
 }

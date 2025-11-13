@@ -17,4 +17,11 @@ const (
 		JOIN pull_requests pr 
 			ON ar.pull_request_id = pr.pull_request_id 
 		WHERE ar.reviewer_user_id = $1`
+
+	updateUserStatusQuery = `
+		UPDATE users 
+			SET is_active = $1 
+		WHERE user_id = $2
+			RETURNING *
+	`
 )
