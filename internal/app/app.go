@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/Negat1v9/pr-review-service/config"
+	prservice "github.com/Negat1v9/pr-review-service/internal/pullRequest/service"
 	"github.com/Negat1v9/pr-review-service/internal/server"
 	"github.com/Negat1v9/pr-review-service/internal/store"
 	teamservice "github.com/Negat1v9/pr-review-service/internal/team/service"
@@ -33,9 +34,10 @@ func (a *App) Run() error {
 
 	teamService := teamservice.NewTeamService(storage)
 	userService := userservice.NewUserService(storage)
+	prService := prservice.NewPRService(storage)
 
 	server := server.New(a.cfg, a.log)
 
-	server.MapHandlers(teamService, userService)
+	server.MapHandlers(teamService, userService, prService)
 	return server.Run()
 }

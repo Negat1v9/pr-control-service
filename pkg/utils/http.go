@@ -13,19 +13,22 @@ import (
 )
 
 const (
-	ErrBadRequest     = "BAD_REQUEST"
-	ErrNotFound       = "NOT_FOUND"
-	ErrPrExists       = "PR_EXISTS"
-	ErrTeamExists     = "TEAM_EXISTS"
-	ErrRequestTimeout = "REQUEST_TIMEOUT"
-	ErrInternal       = "INTERNAL_SERVER_ERROR"
+	ErrBadRequest      = "BAD_REQUEST"
+	ErrNotFound        = "NOT_FOUND"
+	ErrPrExists        = "PR_EXISTS"
+	ErrTeamExists      = "TEAM_EXISTS"
+	ErrRequestTimeout  = "REQUEST_TIMEOUT"
+	ErrInternal        = "INTERNAL_SERVER_ERROR"
+	ErrUserNotReviewer = "NOT_ASSIGNED"
+	ErrNoCantidate     = "NO_CANDIDATE"
+	ErrPrAlredyMerged  = "PR_MERGED"
 )
 
 type Error struct {
-	StatusCode int    `json:"status_code"` // http status code
-	Code       string `json:"code"`        // error code
-	Message    string `json:"message"`     // error message
-	Causes     any    `json:"-"`           // error causes for internal use
+	StatusCode int    `json:"-"`       // http status code
+	Code       string `json:"code"`    // error code
+	Message    string `json:"message"` // error message
+	Causes     any    `json:"-"`       // error causes for internal use
 }
 
 // Errors - implementation of the error interface
