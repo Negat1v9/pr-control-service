@@ -18,6 +18,13 @@ const (
 		SELECT (user_id) FROM users 
 			WHERE team_name IN (
 				SELECT team_name from users WHERE user_id = $1
-			) AND user_id != $1 AND is_active = true
+			) AND (user_id = $1 OR is_active = true) LIMIT $2
+	`
+
+	getActiveUserFromUserTeamWithException = `
+		SELECT (user_id) FROM users 
+			WHERE team_name IN (
+				SELECT team_name from users WHERE user_id = $1
+			) AND (user_id = $1 OR is_active = true) AND user_id NOT IN (%s) LIMIT $2
 	`
 )
