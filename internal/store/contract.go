@@ -36,24 +36,55 @@ type PullRequestRepository interface {
 	DeleteAssignedByReviewerID(ctx context.Context, exec sqlx.ExtContext, reviewerID string) error
 }
 
-type Store struct {
-	Db       *sqlx.DB
-	TeamRepo TeamRepository
-	UserRepo UserRepository
-	PRRepo   PullRequestRepository
+type Store interface {
+	TeamRepo() TeamRepository
+	UserRepo() UserRepository
+	PRRepo() PullRequestRepository
+	DB() *sqlx.DB
+
+	DoTx(ctx context.Context, fn func(ctx context.Context, exec sqlx.ExtContext) error) error
 }
 
-func NewStore(db *sqlx.DB) *Store {
-	return &Store{
-		Db:       db,
-		TeamRepo: teamrepository.NewTeamRepositiry(),
-		UserRepo: userrepository.NewUserRepository(),
-		PRRepo:   pullrequestrepository.NewPullRequestRepository(),
+type store struct {
+	db       *sqlx.DB
+	teamRepo TeamRepository
+	userRepo UserRepository
+	prRepo   PullRequestRepository
+}
+
+func NewStore(db *sqlx.DB) Store {
+	return &store{
+		db: db,
 	}
 }
 
-func (s *Store) DoTx(ctx context.Context, fn func(ctx context.Context, exec sqlx.ExtContext) error) error {
-	tx, err := s.Db.BeginTxx(ctx, nil)
+// TODO: ? remove?
+func (s *store) DB() *sqlx.DB {
+	return s.db
+}
+
+func (s *store) TeamRepo() TeamRepository {
+	if s.teamRepo == nil {
+		s.teamRepo = teamrepository.NewTeamRepositiry()
+	}
+	return s.teamRepo
+}
+
+func (s *store) UserRepo() UserRepository {
+	if s.userRepo == nil {
+		s.userRepo = userrepository.NewUserRepository()
+	}
+	return s.userRepo
+}
+func (s *store) PRRepo() PullRequestRepository {
+	if s.prRepo == nil {
+		s.prRepo = pullrequestrepository.NewPullRequestRepository()
+	}
+	return s.prRepo
+}
+
+func (s *store) DoTx(ctx context.Context, fn func(ctx context.Context, exec sqlx.ExtContext) error) error {
+	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}

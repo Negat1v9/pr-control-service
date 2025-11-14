@@ -3,8 +3,7 @@ package pullrequestrepository
 const (
 	createPullRequestQuery = `
 		INSERT INTO pull_requests (pull_request_id, pull_request_name, author_id)
-			VALUES ($1, $2, $3)
-		RETURNING *
+			VALUES ($1, $2, $3);
 	`
 
 	getPullRequestByIDQuery = `

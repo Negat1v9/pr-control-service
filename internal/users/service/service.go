@@ -8,17 +8,17 @@ import (
 )
 
 type UserService struct {
-	store *store.Store
+	store store.Store
 }
 
-func NewUserService(store *store.Store) *UserService {
+func NewUserService(store store.Store) *UserService {
 	return &UserService{
 		store: store,
 	}
 }
 
 func (s *UserService) SetUserActiveStatus(ctx context.Context, userID string, isActive bool) (*models.User, error) {
-	updatedUser, err := s.store.UserRepo.UpdateUserStatus(ctx, s.store.Db, userID, isActive)
+	updatedUser, err := s.store.UserRepo().UpdateUserStatus(ctx, s.store.DB(), userID, isActive)
 	if err != nil {
 		return nil, err
 	}
@@ -27,5 +27,5 @@ func (s *UserService) SetUserActiveStatus(ctx context.Context, userID string, is
 
 func (s *UserService) GetReview(ctx context.Context, userID string) (*models.UserReviews, error) {
 
-	return s.store.UserRepo.GetUserReviews(ctx, s.store.Db, userID)
+	return s.store.UserRepo().GetUserReviews(ctx, s.store.DB(), userID)
 }

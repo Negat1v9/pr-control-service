@@ -11,10 +11,10 @@ import (
 )
 
 type TeamService struct {
-	store *store.Store
+	store store.Store
 }
 
-func NewTeamService(store *store.Store) *TeamService {
+func NewTeamService(store store.Store) *TeamService {
 	return &TeamService{
 		store: store,
 	}
@@ -22,7 +22,7 @@ func NewTeamService(store *store.Store) *TeamService {
 
 func (s *TeamService) AddTeam(ctx context.Context, newTeam *models.Team) (*models.Team, error) {
 
-	_, err := s.store.TeamRepo.GetTeamWithMembers(ctx, s.store.Db, newTeam.TeamName)
+	_, err := s.store.TeamRepo().GetTeamWithMembers(ctx, s.store.DB(), newTeam.TeamName)
 	if err == nil {
 		return nil, fmt.Errorf("team_name already exists")
 	}
@@ -35,11 +35,11 @@ func (s *TeamService) AddTeam(ctx context.Context, newTeam *models.Team) (*model
 
 	err = s.store.DoTx(ctx, func(ctx context.Context, exec sqlx.ExtContext) error {
 
-		if err := s.store.TeamRepo.CreateTeam(ctx, exec, newTeam.TeamName); err != nil {
+		if err := s.store.TeamRepo().CreateTeam(ctx, exec, newTeam.TeamName); err != nil {
 			return err
 		}
 
-		if err := s.store.UserRepo.CreateManyUsers(ctx, exec, newTeam.TeamName, newTeam.Members); err != nil {
+		if err := s.store.UserRepo().CreateManyUsers(ctx, exec, newTeam.TeamName, newTeam.Members); err != nil {
 			return err
 		}
 
@@ -54,7 +54,7 @@ func (s *TeamService) AddTeam(ctx context.Context, newTeam *models.Team) (*model
 }
 
 func (s *TeamService) GetTeam(ctx context.Context, teamName string) (*models.Team, error) {
-	team, err := s.store.TeamRepo.GetTeamWithMembers(ctx, s.store.Db, teamName)
+	team, err := s.store.TeamRepo().GetTeamWithMembers(ctx, s.store.DB(), teamName)
 	if err != nil {
 		return nil, err
 	}

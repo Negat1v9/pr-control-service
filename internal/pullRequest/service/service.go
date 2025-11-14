@@ -13,18 +13,17 @@ import (
 )
 
 type PRService struct {
-	store *store.Store
+	store store.Store
 }
 
-func NewPRService(store *store.Store) *PRService {
+func NewPRService(store store.Store) *PRService {
 	return &PRService{
 		store: store,
 	}
 }
 
-// TODO: return http errors where needed
 func (s *PRService) CreatePR(ctx context.Context, pr *models.CreatePullRequest) (*models.PullRequest, error) {
-	exitstPR, err := s.store.PRRepo.GetPullRequestByID(ctx, s.store.Db, pr.ID)
+	exitstPR, err := s.store.PRRepo().GetPullRequestByID(ctx, s.store.DB(), pr.ID)
 	if err == nil && exitstPR != nil {
 		return nil, utils.NewError(409, utils.ErrPrExists, "PR id already exists", nil)
 	}
@@ -41,7 +40,7 @@ func (s *PRService) CreatePR(ctx context.Context, pr *models.CreatePullRequest) 
 
 	err = s.store.DoTx(ctx, func(ctx context.Context, exec sqlx.ExtContext) error {
 		// get active team members of PR author to assign as reviewers
-		activeAuthorsTeamMembers, err := s.store.TeamRepo.GetUsersIDFromUserTeam(ctx, exec, pr.AuthorID, 2)
+		activeAuthorsTeamMembers, err := s.store.TeamRepo().GetUsersIDFromUserTeam(ctx, exec, pr.AuthorID, 2)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				// user with
@@ -51,13 +50,13 @@ func (s *PRService) CreatePR(ctx context.Context, pr *models.CreatePullRequest) 
 		}
 
 		// create PR
-		if err := s.store.PRRepo.CreatePullRequest(ctx, exec, newPr); err != nil {
+		if err := s.store.PRRepo().CreatePullRequest(ctx, exec, newPr); err != nil {
 			return fmt.Errorf("CreatePR: unable to create PR: %v", err)
 		}
 
 		// assign only if there are active members in author's team
 		if len(activeAuthorsTeamMembers) > 0 {
-			if err := s.store.PRRepo.AssignManyReviewers(ctx, exec, pr.ID, activeAuthorsTeamMembers); err != nil {
+			if err := s.store.PRRepo().AssignManyReviewers(ctx, exec, pr.ID, activeAuthorsTeamMembers); err != nil {
 				return fmt.Errorf("CreatePR: unable to assign reviewers to PR: %v", err)
 			}
 		}
@@ -69,7 +68,7 @@ func (s *PRService) CreatePR(ctx context.Context, pr *models.CreatePullRequest) 
 	}
 
 	// receive created PR
-	createdPR, err := s.store.PRRepo.GetPullRequestByID(ctx, s.store.Db, pr.ID)
+	createdPR, err := s.store.PRRepo().GetPullRequestByID(ctx, s.store.DB(), pr.ID)
 	if err != nil {
 		return nil, fmt.Errorf("CreatePR: unable to get created PR: %v", err)
 	}
@@ -77,7 +76,7 @@ func (s *PRService) CreatePR(ctx context.Context, pr *models.CreatePullRequest) 
 }
 
 func (s *PRService) MergePR(ctx context.Context, prID string) (*models.PullRequest, error) {
-	pr, err := s.store.PRRepo.GetPullRequestByID(ctx, s.store.Db, prID)
+	pr, err := s.store.PRRepo().GetPullRequestByID(ctx, s.store.DB(), prID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, utils.NewNotFoundError("resource not found", nil)
@@ -89,7 +88,7 @@ func (s *PRService) MergePR(ctx context.Context, prID string) (*models.PullReque
 		return pr, nil
 	}
 
-	err = s.store.PRRepo.MergePullRequest(ctx, s.store.Db, prID)
+	err = s.store.PRRepo().MergePullRequest(ctx, s.store.DB(), prID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, utils.NewNotFoundError("resource not found", nil)
@@ -97,7 +96,7 @@ func (s *PRService) MergePR(ctx context.Context, prID string) (*models.PullReque
 		return nil, fmt.Errorf("MergePR: unable to merge PR: %v", err)
 	}
 
-	updatedPR, err := s.store.PRRepo.GetPullRequestByID(ctx, s.store.Db, prID)
+	updatedPR, err := s.store.PRRepo().GetPullRequestByID(ctx, s.store.DB(), prID)
 	if err != nil {
 		return nil, fmt.Errorf("MergePR: unable to get updated PR: %v", err)
 	}
@@ -106,7 +105,7 @@ func (s *PRService) MergePR(ctx context.Context, prID string) (*models.PullReque
 }
 
 func (s *PRService) ReassignPR(ctx context.Context, prID string, oldReviewerID string) (*models.ReassignPullRequestResponse, error) {
-	pr, err := s.store.PRRepo.GetPullRequestByID(ctx, s.store.Db, prID)
+	pr, err := s.store.PRRepo().GetPullRequestByID(ctx, s.store.DB(), prID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, utils.NewNotFoundError("resource not found", nil)
@@ -123,7 +122,7 @@ func (s *PRService) ReassignPR(ctx context.Context, prID string, oldReviewerID s
 	}
 
 	// get active users from author team without oldest
-	newActiveUsers, err := s.store.TeamRepo.GetActiveUsersTeamWithException(ctx, s.store.Db, pr.AuthorID, pr.AssignedReviewers, 1)
+	newActiveUsers, err := s.store.TeamRepo().GetActiveUsersTeamWithException(ctx, s.store.DB(), pr.AuthorID, pr.AssignedReviewers, 1)
 	if err != nil {
 		fmt.Println("no newActiveUsers")
 		if err == sql.ErrNoRows {
@@ -134,11 +133,11 @@ func (s *PRService) ReassignPR(ctx context.Context, prID string, oldReviewerID s
 
 	err = s.store.DoTx(ctx, func(ctx context.Context, exec sqlx.ExtContext) error {
 		// delete old
-		txErr := s.store.PRRepo.DeleteAssignedByReviewerID(ctx, exec, oldReviewerID)
+		txErr := s.store.PRRepo().DeleteAssignedByReviewerID(ctx, exec, oldReviewerID)
 		if err != nil {
 			return txErr
 		}
-		txErr = s.store.PRRepo.AssignReviewer(ctx, exec, prID, newActiveUsers[0])
+		txErr = s.store.PRRepo().AssignReviewer(ctx, exec, prID, newActiveUsers[0])
 		if err != nil {
 			return txErr
 		}
@@ -149,7 +148,7 @@ func (s *PRService) ReassignPR(ctx context.Context, prID string, oldReviewerID s
 		return nil, err
 	}
 
-	pr, err = s.store.PRRepo.GetPullRequestByID(ctx, s.store.Db, prID)
+	pr, err = s.store.PRRepo().GetPullRequestByID(ctx, s.store.DB(), prID)
 	if err != nil {
 		return nil, err
 	}
