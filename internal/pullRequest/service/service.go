@@ -124,9 +124,8 @@ func (s *PRService) ReassignPR(ctx context.Context, prID string, oldReviewerID s
 	// get active users from author team without oldest
 	newActiveUsers, err := s.store.TeamRepo().GetActiveUsersTeamWithException(ctx, s.store.DB(), pr.AuthorID, pr.AssignedReviewers, 1)
 	if err != nil {
-		fmt.Println("no newActiveUsers")
 		if err == sql.ErrNoRows {
-			utils.NewError(409, utils.ErrNoCantidate, "no active replacement candidate in team", nil)
+			return nil, utils.NewError(409, utils.ErrNoCantidate, "no active replacement candidate in team", nil)
 		}
 		return nil, err
 	}
