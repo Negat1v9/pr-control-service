@@ -3,10 +3,10 @@ package teamservice
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/Negat1v9/pr-review-service/internal/models"
 	"github.com/Negat1v9/pr-review-service/internal/store"
+	"github.com/Negat1v9/pr-review-service/pkg/utils"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -24,14 +24,12 @@ func (s *TeamService) AddTeam(ctx context.Context, newTeam *models.Team) (*model
 
 	_, err := s.store.TeamRepo().GetTeamWithMembers(ctx, s.store.DB(), newTeam.TeamName)
 	if err == nil {
-		return nil, fmt.Errorf("team_name already exists")
+		return nil, utils.NewError(400, utils.ErrTeamExists, "team_name already exists", nil)
 	}
 
 	if err != sql.ErrNoRows {
 		return nil, err
 	}
-
-	createdTeam := &models.Team{}
 
 	err = s.store.DoTx(ctx, func(ctx context.Context, exec sqlx.ExtContext) error {
 
@@ -50,12 +48,20 @@ func (s *TeamService) AddTeam(ctx context.Context, newTeam *models.Team) (*model
 		return nil, err
 	}
 
+	createdTeam, err := s.store.TeamRepo().GetTeamWithMembers(ctx, s.store.DB(), newTeam.TeamName)
+	if err != nil {
+		return nil, err
+	}
+
 	return createdTeam, nil
 }
 
 func (s *TeamService) GetTeam(ctx context.Context, teamName string) (*models.Team, error) {
 	team, err := s.store.TeamRepo().GetTeamWithMembers(ctx, s.store.DB(), teamName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, utils.NewNotFoundError("resource not found", nil)
+		}
 		return nil, err
 	}
 

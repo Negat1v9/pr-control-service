@@ -142,7 +142,7 @@ func TestGetReview(t *testing.T) {
 		err := json.Unmarshal(rr.Body.Bytes(), &r)
 		require.NoError(t, err)
 		require.Equal(t, userID, r["user_id"])
-		require.Equal(t, 2.0, float64(len(r["pull_requests"].([]interface{}))))
+		require.Equal(t, 2, len(r["pull_requests"].([]any)))
 	})
 
 	t.Run("Not found user", func(t *testing.T) {
