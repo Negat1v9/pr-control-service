@@ -17,8 +17,7 @@ func NewPullRequestRepository() *pullRequestRepository {
 }
 
 func (r *pullRequestRepository) CreatePullRequest(ctx context.Context, exec sqlx.ExtContext, pr *models.PullRequest) error {
-	err := exec.QueryRowxContext(ctx, createPullRequestQuery, pr.ID, pr.Name, pr.AuthorID).
-		StructScan(pr)
+	_, err := exec.ExecContext(ctx, createPullRequestQuery, &pr.ID, &pr.Name, &pr.AuthorID)
 	return err
 }
 
