@@ -71,6 +71,29 @@ func (r *pullRequestRepository) MergePullRequest(ctx context.Context, exec sqlx.
 	return nil
 }
 
+func (r *pullRequestRepository) GetQuantityPRReviewers(ctx context.Context, exec sqlx.ExtContext) ([]models.PullRequestQuantityReviewers, error) {
+	rows, err := exec.QueryContext(ctx, getPullRequestsQuantityAssignedReviewers)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]models.PullRequestQuantityReviewers, 0)
+	for rows.Next() {
+		var prQuantity models.PullRequestQuantityReviewers
+		err = rows.Scan(&prQuantity.ID, &prQuantity.QuantityReviewers)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, prQuantity)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (r *pullRequestRepository) AssignReviewer(ctx context.Context, exec sqlx.ExtContext, prID, reviewerID string) error {
 	_, err := exec.ExecContext(ctx, createAssignedQuery, reviewerID, prID)
 	return err

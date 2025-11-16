@@ -107,6 +107,39 @@ func TestMergePullRequest(t *testing.T) {
 	})
 }
 
+func TestGetQuantityPRReviewers(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	require.NoError(t, err)
+	defer db.Close()
+
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	defer sqlxDB.Close()
+
+	prRepo := NewPullRequestRepository()
+	t.Run("GetQuantityReviewers", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"pull_request_id", "quantity_reviewers"}).
+			AddRow("pr-1", 4).
+			AddRow("pr-2", 1).
+			AddRow("pr-3", 0)
+
+		mock.ExpectQuery(getPullRequestsQuantityAssignedReviewers).WillReturnRows(rows)
+
+		prInfo, err := prRepo.GetQuantityPRReviewers(context.Background(), sqlxDB)
+		require.NoError(t, err)
+		require.NotNil(t, prInfo)
+	})
+	t.Run("GetQuantityReviewers no one", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"pull_request_id", "quantity_reviewers"})
+
+		mock.ExpectQuery(getPullRequestsQuantityAssignedReviewers).WillReturnRows(rows)
+
+		prInfo, err := prRepo.GetQuantityPRReviewers(context.Background(), sqlxDB)
+		require.NoError(t, err)
+		require.Equal(t, 0, len(prInfo))
+	})
+
+}
+
 func TestAssignReviewer(t *testing.T) {
 	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	require.NoError(t, err)

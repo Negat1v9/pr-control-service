@@ -279,6 +279,21 @@ func (mr *MockPullRequestRepositoryMockRecorder) GetPullRequestByID(ctx, exec, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPullRequestByID", reflect.TypeOf((*MockPullRequestRepository)(nil).GetPullRequestByID), ctx, exec, prID)
 }
 
+// GetQuantityPRReviewers mocks base method.
+func (m *MockPullRequestRepository) GetQuantityPRReviewers(ctx context.Context, exec sqlx.ExtContext) ([]models.PullRequestQuantityReviewers, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetQuantityPRReviewers", ctx, exec)
+	ret0, _ := ret[0].([]models.PullRequestQuantityReviewers)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetQuantityPRReviewers indicates an expected call of GetQuantityPRReviewers.
+func (mr *MockPullRequestRepositoryMockRecorder) GetQuantityPRReviewers(ctx, exec any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuantityPRReviewers", reflect.TypeOf((*MockPullRequestRepository)(nil).GetQuantityPRReviewers), ctx, exec)
+}
+
 // MergePullRequest mocks base method.
 func (m *MockPullRequestRepository) MergePullRequest(ctx context.Context, exec sqlx.ExtContext, prID string) error {
 	m.ctrl.T.Helper()

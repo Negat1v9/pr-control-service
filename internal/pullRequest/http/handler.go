@@ -80,3 +80,16 @@ func (h *PRHanler) Reassign(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteJsonResponse(w, 200, "", updatedPR)
 }
+
+func (h *PRHanler) Statistics(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancel()
+
+	pullRequestsQuantiReviewers, err := h.service.Statistics(ctx)
+	if err != nil {
+		h.log.Errorf("failed to reassign pull request: %v", err)
+		utils.WriteErrResponse(w, err)
+	}
+
+	utils.WriteJsonResponse(w, 200, "stat", pullRequestsQuantiReviewers)
+}
