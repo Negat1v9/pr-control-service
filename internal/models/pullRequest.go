@@ -19,6 +19,11 @@ type PullRequest struct {
 	MergerAt          *time.Time        `json:"mergedAt,omitempty" db:"merged_at,omitempty"`
 }
 
+type PullRequestQuantityReviewers struct {
+	ID                string `json:"pull_request_id" db:"pull_request_id"`
+	QuantityReviewers int    `json:"quantity_reviewers" db:"quantity_reviewers"`
+}
+
 // CreatePullRequest represents the data needed to create a new pull request.
 type CreatePullRequest struct {
 	ID       string `json:"pull_request_id" db:"pull_request_id"`

@@ -319,3 +319,68 @@ func TestReassign(t *testing.T) {
 
 	})
 }
+
+func TestStatistics(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockPRRepo := mock_store.NewMockPullRequestRepository(ctrl)
+	mockStore := mock_store.NewMockStore(ctrl)
+
+	prStat := []models.PullRequestQuantityReviewers{
+		{
+			ID:                "pr-1",
+			QuantityReviewers: 1,
+		},
+		{
+			ID:                "pr-2",
+			QuantityReviewers: 3,
+		},
+		{
+			ID:                "pr-2",
+			QuantityReviewers: 3,
+		},
+	}
+
+	db := sqlx.DB{}
+
+	mockStore.EXPECT().DB().Return(&db).AnyTimes()
+
+	mockStore.EXPECT().PRRepo().Return(mockPRRepo).AnyTimes()
+
+	doReq := func() *httptest.ResponseRecorder {
+		service := prservice.NewPRService(mockStore)
+		handler := NewPRHanlder(logger.NewLogger("local"), service)
+		prMux := PRRouter(handler)
+
+		req, err := http.NewRequest("GET", "/statistics", nil)
+		require.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+
+		prMux.ServeHTTP(rr, req)
+		return rr
+	}
+
+	t.Run("Get PR statistics", func(t *testing.T) {
+		mockPRRepo.EXPECT().GetQuantityPRReviewers(gomock.Any(), gomock.Any()).Return(prStat, nil)
+		rr := doReq()
+		require.Equal(t, 200, rr.Code)
+		r := make(map[string]any, 0)
+		err := json.Unmarshal(rr.Body.Bytes(), &r)
+		require.NoError(t, err)
+		require.Equal(t, 3, len(r["stat"].([]any)))
+		require.Equal(t, "pr-1", r["stat"].([]any)[0].(map[string]any)["pull_request_id"])
+		require.Equal(t, float64(1), r["stat"].([]any)[0].(map[string]any)["quantity_reviewers"])
+	})
+
+	t.Run("Get PR no PRs", func(t *testing.T) {
+		mockPRRepo.EXPECT().GetQuantityPRReviewers(gomock.Any(), gomock.Any()).Return([]models.PullRequestQuantityReviewers{}, nil)
+		rr := doReq()
+		require.Equal(t, 200, rr.Code)
+		r := make(map[string]any, 0)
+		err := json.Unmarshal(rr.Body.Bytes(), &r)
+		require.NoError(t, err)
+		require.Equal(t, 0, len(r["stat"].([]any)))
+	})
+}

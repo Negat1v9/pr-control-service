@@ -157,6 +157,11 @@ func (s *PRService) ReassignPR(ctx context.Context, prID string, oldReviewerID s
 	}, nil
 }
 
+func (s *PRService) Statistics(ctx context.Context) ([]models.PullRequestQuantityReviewers, error) {
+	return s.store.PRRepo().GetQuantityPRReviewers(ctx, s.store.DB())
+
+}
+
 func isUserIDInReviewers(userID string, reviewers []string) bool {
 	for _, reviewer := range reviewers {
 		if reviewer == userID {

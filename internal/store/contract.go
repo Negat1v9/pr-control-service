@@ -34,6 +34,7 @@ type PullRequestRepository interface {
 	AssignReviewer(ctx context.Context, exec sqlx.ExtContext, prID, reviewerID string) error
 	AssignManyReviewers(ctx context.Context, exec sqlx.ExtContext, prID string, reviewerIDs []string) error
 	DeleteAssignedByReviewerID(ctx context.Context, exec sqlx.ExtContext, reviewerID string) error
+	GetQuantityPRReviewers(ctx context.Context, exec sqlx.ExtContext) ([]models.PullRequestQuantityReviewers, error)
 }
 
 type Store interface {

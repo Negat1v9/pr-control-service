@@ -26,6 +26,12 @@ const (
 			WHERE pull_request_id = $1
 	`
 
+	getPullRequestsQuantityAssignedReviewers = `
+		SELECT pr.pull_request_id, COUNT(ar.reviewer_user_id) AS quantity_reviewers
+			FROM pull_requests pr 
+		LEFT JOIN assigned_reviewers ar ON pr.pull_request_id = ar.pull_request_id 
+			GROUP by pr.pull_request_id
+	`
 	createAssignedQuery = `
 		INSERT INTO assigned_reviewers (reviewer_user_id, pull_request_id) VALUES ($1, $2)
 		ON CONFLICT (reviewer_user_id, pull_request_id) DO NOTHING
