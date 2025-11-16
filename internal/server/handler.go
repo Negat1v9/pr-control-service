@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/Negat1v9/pr-review-service/internal/middleware"
 	prhttp "github.com/Negat1v9/pr-review-service/internal/pullRequest/http"
 	prservice "github.com/Negat1v9/pr-review-service/internal/pullRequest/service"
 	teamhttp "github.com/Negat1v9/pr-review-service/internal/team/http"
@@ -26,5 +27,9 @@ func (s *Server) MapHandlers(teamService *teamservice.TeamService, userService *
 	router.Handle("/users/", http.StripPrefix("/users", userRouter))
 	router.Handle("/pullRequest/", http.StripPrefix("/pullRequest", prRouter))
 
-	s.server.Handler = router
+	// middleware service
+	mw := middleware.New()
+
+	// all requests go through from basic middleware
+	s.server.Handler = mw.BasicMW()(router)
 }
