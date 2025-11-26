@@ -1,21 +1,24 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/Negat1v9/pr-review-service/pkg/metrics"
+)
 
 type Middleware func(http.Handler) http.Handler
 
-type MiddleWareManager struct{}
-
-func New() *MiddleWareManager {
-	return &MiddleWareManager{}
+type MiddleWareManager struct {
+	metrics *metrics.PrometheusMetrics
 }
 
-// adding necessary services such as CORS
-func (mw *MiddleWareManager) BasicMW() Middleware {
-	return createStack(CORS)
+func New(m *metrics.PrometheusMetrics) *MiddleWareManager {
+	return &MiddleWareManager{
+		metrics: m,
+	}
 }
 
-func createStack(xs ...Middleware) Middleware {
+func CreateStack(xs ...Middleware) Middleware {
 	return func(next http.Handler) http.Handler {
 		for i := 0; i < len(xs); i++ {
 			x := xs[i]

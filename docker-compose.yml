@@ -1,12 +1,12 @@
 services:
-
   server:
     container_name: prReviewsServer
     build:
       context: .
       dockerfile: cmd/server/Dockerfile
     ports:
-      - "8080:8888"
+      - 8080:8888
+      - 9100:9100
     networks:
       - my-network
     volumes:
@@ -16,7 +16,30 @@ services:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
-      
+
+  prometheus:
+    image: prom/prometheus:v3.8.0-rc.1
+    ports:
+      - 9090:9090
+    volumes:
+      - ./metrics:/etc/prometheus
+      - prometheus_data:/prometheus
+    networks:
+      - my-network
+
+  grafana:
+    image: grafana/grafana:12.1
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./metrics/grafana.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana_storage:/var/lib/grafana
+    networks:
+      - my-network
+
   migrator:
     container_name: migrator
     build:
@@ -26,12 +49,11 @@ services:
       - ./migrations:/app/migrations
       - ./config:/app/config
     networks:
-    - my-network
+      - my-network
     depends_on:
       postgres:
         condition: service_healthy
-    
-  
+
   postgres:
     image: postgres:18.0-alpine3.22
     container_name: prReviewsPostgres
@@ -53,7 +75,8 @@ services:
 
 volumes:
   prReviewDB:
+  grafana_storage:
+  prometheus_data:
 networks:
   my-network:
     driver: bridge
-  

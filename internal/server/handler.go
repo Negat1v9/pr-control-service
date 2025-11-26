@@ -27,9 +27,12 @@ func (s *Server) MapHandlers(teamService *teamservice.TeamService, userService *
 	router.Handle("/users/", http.StripPrefix("/users", userRouter))
 	router.Handle("/pullRequest/", http.StripPrefix("/pullRequest", prRouter))
 
-	// middleware service
-	mw := middleware.New()
+	// middleware service with metrics
+	mw := middleware.New(s.metrics)
 
 	// all requests go through from basic middleware
-	s.server.Handler = mw.BasicMW()(router)
+	s.server.Handler = middleware.CreateStack(
+		middleware.CORS,
+		mw.MetricsMiddleware,
+	)(router)
 }

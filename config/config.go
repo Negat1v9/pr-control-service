@@ -10,6 +10,7 @@ type Config struct {
 	AppConfig
 	WebConfig
 	PostgresConfig
+	MetricsConfig
 }
 
 type AppConfig struct {
@@ -29,6 +30,11 @@ type PostgresConfig struct {
 	DbUser     string
 	DbPassword string
 	DbSslMode  string
+}
+
+type MetricsConfig struct {
+	ListenAddr string
+	Name       string
 }
 
 func parseCfg(fileName string) (*viper.Viper, error) {

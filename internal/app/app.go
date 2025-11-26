@@ -8,6 +8,7 @@ import (
 	teamservice "github.com/Negat1v9/pr-review-service/internal/team/service"
 	userservice "github.com/Negat1v9/pr-review-service/internal/users/service"
 	"github.com/Negat1v9/pr-review-service/pkg/logger"
+	"github.com/Negat1v9/pr-review-service/pkg/metrics"
 	"github.com/Negat1v9/pr-review-service/pkg/postgres"
 )
 
@@ -36,7 +37,12 @@ func (a *App) Run() error {
 	userService := userservice.NewUserService(storage)
 	prService := prservice.NewPRService(storage)
 
-	server := server.New(a.cfg, a.log)
+	metricsManager, err := metrics.NewMetric(a.cfg.MetricsConfig.ListenAddr, a.cfg.MetricsConfig.Name)
+	if err != nil {
+		return err
+	}
+
+	server := server.New(a.cfg, a.log, metricsManager)
 
 	server.MapHandlers(teamService, userService, prService)
 	return server.Run()

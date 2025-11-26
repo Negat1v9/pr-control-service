@@ -1,11 +1,10 @@
-appConfig: 
+appConfig:
   Env: "local"
 
 webConfig:
   ListenAddress: ":8888"
   ReadTimeout: 15
   WriteTimeout: 15
-
 
 postgresConfig:
   DbHost: "postgres"
@@ -14,3 +13,7 @@ postgresConfig:
   DbPassword: "veryStrongPassword"
   DbName: "prReviewsDB"
   DbSslMode: "disable"
+
+metricsConfig:
+  ListenAddr: ":9100"
+  Name: "pr_control_service"
